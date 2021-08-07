@@ -1,0 +1,52 @@
+docker inspect cassandra_cassandra_1 --format='{{.NetworkSettings.Networks}}'
+docker run --name "test" -p 9101:9101 --net cassandra_default  -e BASENAME=$(hostname) -dt sam
+
+######################
+
+
+package main
+
+import (
+	"github.com/gocql/gocql"
+	"fmt"
+//	"net/http"
+"os"
+
+//	"log"
+       )
+
+
+func main() {
+        o , e := os.Hostname()
+	cluster := gocql.NewCluster("cassandra")
+	 cluster.Consistency = gocql.Quorum
+ 	cluster.ProtoVersion = 4
+ 	//cluster.ConnectTimeout = time.Second * 10
+ 	cluster.Authenticator = gocql.PasswordAuthenticator{Username: "cassandra", Password: ""}
+ 	_, err := cluster.CreateSession()
+	if err == nil && e == nil  {
+		fmt.Println( "cassandra_up{instance=%q,BASE_INSTANCE=%q} 1\n",o,os.Getenv("BASENAME"))
+		} else {
+		fmt.Println("cassandra_up{instance=%q,BASE_INSTANCE=%q} 0\n",o,os.Getenv("BASENAME"))
+    }
+}
+
+############################################
+
+You can enable the prometheus alertmanager
+
+  - name: Cassandra service in production Down
+      rules:
+      - alert: CassandraSerProdDown
+        expr:  cassandra_up{} != 1
+        for: 15m
+        labels:
+          severity: P2
+          team: Service_team
+        annotations:
+          description: 'Cassandra service in  {{ $labels.instance }} down for 5 minutes'
+          summary: 'Cassandra service in  {{ $labels.instance }} down for 5 minutes'
+
+
+
+
