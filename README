@@ -1,3 +1,6 @@
+
+### PraveenSam
+
 docker inspect cassandra_cassandra_1 --format='{{.NetworkSettings.Networks}}'
 docker run --name "test" -p 9101:9101 --net cassandra_default  -e BASENAME=$(hostname) -dt sam
 
